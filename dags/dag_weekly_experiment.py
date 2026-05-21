@@ -24,6 +24,11 @@ with DAG(
     tags=["dbt", "domyos", "experiment", "weekly"],
 ) as dag:
 
+    check_sources_freshness = BashOperator(
+        task_id="check_sources_freshness",
+        bash_command=f"dbt source freshness --project-dir {DBT_PROJECT_DIR} --target prod",
+    )
+
     run_intermediate = BashOperator(
         task_id="run_intermediate",
         bash_command=f"dbt run --project-dir {DBT_PROJECT_DIR} --target prod --select int_experiment_sales_enriched",
@@ -55,4 +60,4 @@ with DAG(
         trigger_rule="one_failed",
     )
 
-    run_intermediate >> run_mart >> run_tests >> [notify_success, notify_failure]
+    check_sources_freshness >> run_intermediate >> run_mart >> run_tests >> [notify_success, notify_failure]

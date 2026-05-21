@@ -38,8 +38,6 @@ models:
         description: TRUE si la semaine est dans la période test S35-S41 2023.
         tests:
           - not_null
-      - name: transaction_channel_type
-        description: Canal de vente (offline ou online).
       - name: gmv_kit_10kg
         description: CA brut du kit 10kg sur la semaine en euros.
         tests:

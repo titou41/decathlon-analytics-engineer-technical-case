@@ -6,7 +6,6 @@ select
     family_range,
     location,
     sales_area,
-    transaction_channel_type, 
     -- Flag période test
     case
         when year = 2023 and week >= 35 and week <= 41
@@ -34,4 +33,4 @@ select
     coalesce(sum(case when product_category = 'alternative' then gmv end), 0)  - coalesce(sum(case when product_category = 'kit_10kg' then gmv end), 0) as net_uplift_estimated
 
 from {{ref('int_experiment_sales_enriched')}} as sales 
-group by 1, 2, 3, 4, 5, 6, 7, 8
+group by 1, 2, 3, 4, 5, 6, 7

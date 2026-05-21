@@ -131,8 +131,6 @@ permet de comparer des magasins aux profils plus homogènes.
 
 3. **Saisonnalité** : S35-S41 correspond à la rentrée, période naturellement forte pour le sport. Une comparaison avec les mêmes semaines en 2022 renforcerait l'analyse.
 
-4. **Canaux offline et online** : le test portait sur le retrait en rayon (offline) mais les transactions online sont incluses. Utiliser `transaction_channel_type` pour segmenter dans Tableau.
+4. **Lost demand** : les clients repartis sans acheter ne sont pas visibles dans les données transactionnelles. La perte réelle peut être sous-estimée.
 
-5. **Lost demand** : les clients repartis sans acheter ne sont pas visibles dans les données transactionnelles. La perte réelle peut être sous-estimée.
-
-6. **`net_uplift_estimated`** : uniquement pertinent pour `is_tested_region = TRUE` pendant `is_test_period = TRUE`. Dans les stores contrôle il sera toujours positif puisque le kit 10kg se vend normalement.
+5. **`net_uplift_estimated`** : uniquement pertinent pour `is_tested_region = TRUE` pendant `is_test_period = TRUE`. Dans les stores contrôle il sera toujours positif puisque le kit 10kg se vend normalement.

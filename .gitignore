@@ -1,0 +1,3 @@
+seeds/*.csv
+logs/
+.DS_Store

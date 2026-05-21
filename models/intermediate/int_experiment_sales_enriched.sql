@@ -5,7 +5,8 @@ with sales as (
         extract(week from transaction_date) as week
     from {{ source('domyos', 'fact_sales') }}
     where item_operation_type = 'sale'
-
+    and transaction_channel_type = 'offline'
+            
 ), 
 
 products as (

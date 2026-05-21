@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: mart_experiment_weekly_sales
+    description: >
+      Dataset final pour l'analyse de l'expérimentation commerciale Domyos.
+      Grain : 1 ligne par année x semaine x magasin.
+      Couvre toute la période disponible pour permettre la comparaison avant/pendant le test.
+      Exposé au BI Engineer pour la construction du dashboard Tableau.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - year
+            - week
+            - store_code
+    columns:
+      - name: year
+        description: Année de la transaction.
+        tests:
+          - not_null
+      - name: week
+        description: Numéro de semaine (1-53).
+        tests:
+          - not_null
+      - name: store_code
+        description: Identifiant du magasin.
+        tests:
+          - not_null
+      - name: is_tested_region
+        description: TRUE si le magasin appartient au groupe test (kit 10kg retiré).
+      - name: family_range
+        description: Niveau de gamme du magasin (1, 2 ou 3).
+      - name: location
+        description: Type de localisation du magasin.
+      - name: sales_area
+        description: Surface de vente en m².
+      - name: is_test_period
+        description: TRUE si la semaine est dans la période test S35-S41 2023.
+        tests:
+          - not_null
+      - name: transaction_channel_type
+        description: Canal de vente (offline ou online).
+      - name: gmv_kit_10kg
+        description: CA brut du kit 10kg sur la semaine en euros.
+        tests:
+          - not_null
+      - name: quantity_kit_10kg
+        description: Quantités vendues du kit 10kg sur la semaine.
+        tests:
+          - not_null
+      - name: nb_transaction_kit_10kg
+        description: Nombre de transactions contenant le kit 10kg.
+        tests:
+          - not_null
+      - name: gmv_alternatives
+        description: CA brut des produits alternatifs sur la semaine en euros.
+        tests:
+          - not_null
+      - name: quantity_alternatives
+        description: Quantités vendues des produits alternatifs sur la semaine.
+        tests:
+          - not_null
+      - name: nb_transaction_alternatives
+        description: Nombre de transactions contenant un produit alternatif.
+        tests:
+          - not_null
+      - name: gmv_total
+        description: CA brut total du magasin sur la semaine en euros.
+        tests:
+          - not_null
+      - name: gmv_per_sqm
+        description: CA brut total divisé par la surface de vente. Normalise les différences de taille entre magasins.
+      - name: availability_rate
+        description: >
+          Taux de disponibilité stock moyen sur la semaine pour les produits de la gamme haltères.
+          Calculé depuis fact_stock — indique la disponibilité système, pas forcément la présence en rayon.
+      - name: net_uplift_estimated
+        description: >
+          GMV alternatives - GMV kit 10kg. Mesure si les alternatives compensent la perte du kit 10kg.
+          Positif = compensation, négatif = perte nette.
+          Uniquement pertinent pour is_tested_region = TRUE pendant is_test_period = TRUE.

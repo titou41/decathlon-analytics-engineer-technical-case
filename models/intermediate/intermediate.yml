@@ -1,0 +1,82 @@
+version: 2
+
+models:
+
+  - name: int_experiment_sales_enriched
+    description: >
+      Enrichissement de fact_sales avec les dimensions produit et magasin.
+      Contient toutes les transactions de vente (item_operation_type = 'sale')
+      enrichies avec la catégorisation produit (kit_10kg, alternative, other),
+      les dimensions magasin et la disponibilité stock au jour de la transaction.
+      Note : le inner join sur products exclut silencieusement les transactions
+      dont l'item_code n'existe pas dans dim_model.
+    columns:
+      - name: transaction_id
+        description: Identifiant de la transaction. Non unique au niveau ligne.
+        tests:
+          - not_null
+      - name: transaction_date
+        description: Date de la transaction.
+        tests:
+          - not_null
+      - name: year
+        description: Année extraite de transaction_date.
+        tests:
+          - not_null
+      - name: week
+        description: Numéro de semaine extrait de transaction_date.
+        tests:
+          - not_null
+      - name: store_code
+        description: Identifiant du magasin.
+        tests:
+          - not_null
+      - name: is_tested_region
+        description: TRUE si le magasin appartient au groupe test.
+      - name: family_range
+        description: Niveau de gamme du magasin (1, 2 ou 3).
+      - name: location
+        description: Type de localisation du magasin.
+      - name: sales_area
+        description: Surface de vente en m².
+      - name: item_code
+        description: Identifiant de l'article vendu.
+        tests:
+          - not_null
+      - name: model_code
+        description: Identifiant du modèle parent.
+      - name: model_name
+        description: Nom du modèle.
+      - name: product_weight
+        description: Poids du produit en kg.
+      - name: product_nature
+        description: Catégorie du produit.
+      - name: range_item
+        description: Niveau de gamme du produit.
+      - name: product_category
+        description: >
+          Catégorisation du produit dans le contexte du test.
+          kit_10kg = produit retiré (item_codes 2524419 et 4361142),
+          alternative = weight set ou weight plate hors kit 10kg,
+          other = reste du catalogue.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['kit_10kg', 'alternative', 'other']
+      - name: transaction_channel_type
+        description: Canal de vente (offline ou online).
+        tests:
+          - accepted_values:
+              values: ['offline', 'online']
+      - name: quantity
+        description: Quantité vendue.
+        tests:
+          - not_null
+      - name: gmv
+        description: Gross Merchandise Value en euros.
+        tests:
+          - not_null
+      - name: top_available_stock
+        description: >
+          Disponibilité stock au jour de la transaction (1 = disponible, 0 = non disponible).
+          NULL si aucune observation stock n'existe pour ce jour.

@@ -1,0 +1,152 @@
+version: 2
+
+sources:
+  - name: domyos
+    schema: domyos_dwh
+    description: >
+      Tables sources de la couche marts du Data Warehouse Decathlon Domyos.
+    tables:
+      - name: dim_model
+        description: >
+          This table provides detailed information about models and their associated
+          articles, which are variations of the models (e.g., size differences for
+          a pair of shoes).
+        columns:
+          - name: item_code
+            description: >
+              Unique identifier for an article. Each article corresponds to a specific
+              size or variation of a model. For instance, a model code might represent
+              a type of shoe, while the article code specifies a size of that shoe.
+            tests:
+              - unique
+              - not_null
+          - name: model_code
+            description: >
+              Identifier for a model. A model can have multiple associated article
+              codes that represent its variations.
+            tests:
+              - not_null
+          - name: model_name
+            description: The name of the model in English.
+            tests:
+              - not_null
+          - name: product_weight
+            description: The weight of the product in kilograms.
+          - name: product_nature
+            description: The category or nature of the product associated with the model.
+            tests:
+              - not_null
+          - name: range_item
+            description: The range number to which the article belongs.
+          - name: picture_url
+            description: A URL linking to an image of the product.
+      - name: dim_store
+        description: >
+          This table contains detailed information about stores, including their
+          unique identifiers, physical characteristics, location, and whether they
+          are part of a tested region. It also provides data on the store's product
+          range classification within specific test families.
+        columns:
+          - name: store_code
+            description: Unique identifier for the store.
+            tests:
+              - unique
+              - not_null
+          - name: sales_area
+            description: Sales area of the store, measured in square meters.
+          - name: location
+            description: Store location, categorized as city center, suburbs, etc.
+          - name: is_tested_region
+            description: >
+              Indicates whether the store belongs to the region where the test
+              was conducted.
+            tests:
+              - not_null
+          - name: family_range
+            description: >
+              Product range level of the store within the product family
+              being tested.
+            tests:
+              - not_null
+      - name: fact_sales
+        description: >
+          This table captures transactional data, providing details about customer
+          purchases across stores and channels. Each transaction is uniquely identified
+          and includes information on items bought, quantities, sales channels,
+          and gross merchandise value (GMV).
+        columns:
+          - name: transaction_id
+            description: >
+              Unique identifier for the transaction. A transaction can include
+              multiple items purchased in a single store.
+            tests:
+              - not_null
+          - name: transaction_date
+            description: Date on which the transaction occurred.
+            tests:
+              - not_null
+          - name: store_code
+            description: Identifier of the store where the transaction took place.
+            tests:
+              - not_null
+          - name: transaction_channel_type
+            description: >
+              Specifies the transaction channel. Offline: Traditional in-store purchase.
+              Online: Purchase made through the seller's app in-store
+              (e.g., ordering an item not available in stock).
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['offline', 'online']
+          - name: item_code
+            description: Identifier of the purchased item.
+            tests:
+              - not_null
+          - name: item_operation_type
+            description: >
+              Indicates the operation type for the item:
+              purchase, return, or order cancellation.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['sale', 'return', 'cancel']
+          - name: quantity
+            description: Quantity of the item purchased by the customer in this transaction.
+            tests:
+              - not_null
+          - name: gmv
+            description: >
+              Gross Merchandise Value (GMV) in euros: the total amount paid by customers
+              before deductions such as fees, discounts, or returns.
+            tests:
+              - not_null
+      - name: fact_stock
+        description: >
+          This table provides detailed stock information for items observed in various
+          stores on specific dates. It is used to monitor stock availability and
+          adherence to expected inventory levels.
+        columns:
+          - name: stock_date
+            description: The date when the stock observation was recorded.
+            tests:
+              - not_null
+          - name: store_code
+            description: Identifier of the store where the stock was observed.
+            tests:
+              - not_null
+          - name: item_code
+            description: Identifier of the item in stock.
+            tests:
+              - not_null
+          - name: top_suivi
+            description: >
+              Indicates whether the store is expected to have this item
+              in stock (true if expected).
+            tests:
+              - not_null
+          - name: top_available_stock
+            description: >
+              Indicates whether the item is actually in stock in the store
+              on the given date (true if available).
+            tests:
+              - not_null

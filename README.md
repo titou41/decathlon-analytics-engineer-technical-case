@@ -146,7 +146,7 @@ mais les attributs magasin (`is_tested_region`, `location`, `sales_area`) seront
 
 Le test porte sur un nombre limité de magasins testés (~17) comparés à un groupe contrôle beaucoup plus large.
 Les différences structurelles (taille, assortiment, localisation) peuvent biaiser les comparaisons directes.
-Utiliser `gmv_selected_products_per_sqm` et segmenter par `family_range`
+Utiliser `gmv_per_sqm` et segmenter par `family_range`
 permet de comparer des magasins aux profils plus homogènes.
 
 1. **Saisonnalité** : S35-S41 correspond à la rentrée, période naturellement forte pour le sport. Une comparaison avec les mêmes semaines en 2022 renforcerait l'analyse.

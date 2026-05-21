@@ -51,6 +51,8 @@ dbt se connecte directement au DWH Databricks via le connecteur `dbt-databricks`
 │       └── marts.yml
 ├── setup_db.py                               # Script de création de la base DuckDB locale
 ├── packages.yml
+│── dags/
+│   ├── dag_weekly_experiment.py
 └── dbt_project.yml
 
 ---
@@ -78,7 +80,7 @@ Dans un contexte où les sources seraient brutes (fichiers S3 raw, données non 
 
 ### `mart_experiment_weekly_sales`
 
-- **Grain** : 1 ligne par `year × week × store_code × transaction_channel_type`
+- **Grain** : 1 ligne par `year × week × store_code`
 - **Source** : `int_experiment_sales_enriched`
 - **Matérialisation** : full refresh hebdomadaire
 
@@ -87,7 +89,6 @@ Dans un contexte où les sources seraient brutes (fichiers S3 raw, données non 
 | -------------------------- | ------------------------------------------------ |
 | `is_test_period`           | TRUE si S35–S41 2023                             |
 | `is_tested_region`         | TRUE = groupe test (17 magasins)                 |
-| `transaction_channel_type` | Canal de vente (offline / online)                |
 | `gmv_kit_10kg`             | CA brut du produit retiré                        |
 | `gmv_alternatives`         | CA brut des produits alternatifs                 |
 | `gmv_total`                | CA brut total du magasin                         |
@@ -118,17 +119,18 @@ dbt test
 
 ## Orchestration (production)
 
-Sur la stack Decathlon (Airflow + Databricks + AWS), le DAG tourne **chaque lundi à 06h00** :
-[dbt source freshness]
+Sur la stack Decathlon (Airflow + Databricks + AWS), le DAG `decathlon_domyos_weekly_experiment` tourne **chaque lundi à 06h00 UTC** :
+[check_sources_freshness]        — vérifie que les tables sources sont à jour
 ↓
-[dbt run --select int_experiment_sales_enriched]   — incremental
+[run_intermediate]               — dbt run int_experiment_sales_enriched (incremental)
 ↓
-[dbt run --select mart_experiment_weekly_sales]    — full refresh
+[run_mart]                       — dbt run mart_experiment_weekly_sales (full refresh)
 ↓
-[dbt test --select mart_experiment_weekly_sales]
+[run_tests]                      — dbt test mart_experiment_weekly_sales
 ↓
-[Notification Slack #data-team]
+[notify_success] ou [notify_failure]   — notification Slack #data-pipelines
 
+Le fichier du DAG est disponible dans `dags/dag_weekly_experiment.py`.
 ---
 
 ## Qualité des données
@@ -146,10 +148,9 @@ mais les attributs magasin (`is_tested_region`, `location`, `sales_area`) seront
 
 Le test porte sur un nombre limité de magasins testés (~17) comparés à un groupe contrôle beaucoup plus large.
 Les différences structurelles (taille, assortiment, localisation) peuvent biaiser les comparaisons directes.
-Utiliser `gmv_per_sqm` et segmenter par `family_range`
-permet de comparer des magasins aux profils plus homogènes.
+Utiliser `gmv_per_sqm` et segmenter par `family_range` permet de comparer des magasins aux profils plus homogènes.
 
-1. **Saisonnalité** : S35-S41 correspond à la rentrée, période naturellement forte pour le sport. Une comparaison avec les mêmes semaines en 2022 renforcerait l'analyse.
-2. **Lost demand** : les clients repartis sans acheter ne sont pas visibles dans les données transactionnelles. La perte réelle peut être sous-estimée.
-3. `**net_uplift_estimated`** : uniquement pertinent pour `is_tested_region = TRUE` pendant `is_test_period = TRUE`. Dans les stores contrôle il sera toujours positif puisque le kit 10kg se vend normalement.
+3. **Saisonnalité** : S35-S41 correspond à la rentrée, période naturellement forte pour le sport. Une comparaison avec les mêmes semaines en 2022 renforcerait l'analyse.
+4. **Lost demand** : les clients repartis sans acheter ne sont pas visibles dans les données transactionnelles. La perte réelle peut être sous-estimée.
+5. `**net_uplift_estimated`** : uniquement pertinent pour `is_tested_region = TRUE` pendant `is_test_period = TRUE`. Dans les stores contrôle il sera toujours positif puisque le kit 10kg se vend normalement.
 
